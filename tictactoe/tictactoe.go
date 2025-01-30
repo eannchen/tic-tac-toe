@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+var (
+	defaultSize = 3
+)
+
 type TicTacToe struct {
 	grid       map[[2]int]int
 	oneDimSize int
@@ -58,7 +62,7 @@ func (t TicTacToe) Start() error {
 }
 
 func (t TicTacToe) readOptions() (option, error) {
-	fmt.Print("Enter the size (number) for TicTacToe game: ")
+	fmt.Print("Enter the size for TicTacToe game (default: 3): ")
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
@@ -66,13 +70,9 @@ func (t TicTacToe) readOptions() (option, error) {
 		if err != nil {
 			return option{}, err
 		}
-		size, err := t.praseSize(input)
+		size, err := t.validateSize(input)
 		if err != nil {
 			fmt.Println(err.Error())
-			continue
-		}
-		if size < 3 {
-			fmt.Println("Invalid input. The size needs to be >= 3.")
 			continue
 		}
 		return option{
@@ -101,13 +101,9 @@ func (t TicTacToe) readUserMove() ([2]int, error) {
 		if err != nil {
 			return [2]int{}, err
 		}
-		pos, err = t.prasePosition(input)
+		pos, err = t.validatePosition(input)
 		if err != nil {
 			fmt.Println(err.Error())
-			continue
-		}
-		if _, isTaken := t.grid[[2]int{pos[0], pos[1]}]; isTaken {
-			fmt.Println("Invalid input. The position is taken.")
 			continue
 		}
 		break
@@ -188,24 +184,31 @@ func (t TicTacToe) printGrid() {
 	}
 }
 
-func (t TicTacToe) praseSize(input string) (int, error) {
-	size, err := strconv.Atoi(strings.TrimSpace(input))
+func (t TicTacToe) validateSize(input string) (int, error) {
+	input = strings.TrimSpace(input)
+	if len(input) == 0 {
+		return defaultSize, nil
+	}
+	size, err := strconv.Atoi(input)
 	if err != nil {
 		return -1, errors.New("Invalid input. Please enter number for size.")
+	}
+	if size < 3 {
+		return -1, errors.New("Invalid input. The size needs to be >= 3.")
 	}
 	return size, nil
 }
 
-func (t TicTacToe) prasePosition(input string) ([2]int, error) {
+func (t TicTacToe) validatePosition(input string) ([2]int, error) {
 	parts := strings.Split(strings.TrimSpace(input), ",")
 	if len(parts) != 2 {
 		return [2]int{}, errors.New("Invalid input. Please enter in the format 'row,column'.")
 	}
-	c, err := strconv.Atoi(parts[0])
+	r, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return [2]int{}, errors.New("Invalid input. Please enter number for position.")
 	}
-	r, err := strconv.Atoi(parts[1])
+	c, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return [2]int{}, errors.New("Invalid input. Please enter number for position.")
 	}
@@ -215,5 +218,8 @@ func (t TicTacToe) prasePosition(input string) ([2]int, error) {
 	if c >= t.oneDimSize || r >= t.oneDimSize {
 		return [2]int{}, errors.New("Invalid input. Please enter the number within the range.")
 	}
-	return [2]int{c, r}, nil
+	if _, isTaken := t.grid[[2]int{r, c}]; isTaken {
+		return [2]int{}, errors.New("Invalid input. The position is taken.")
+	}
+	return [2]int{r, c}, nil
 }
