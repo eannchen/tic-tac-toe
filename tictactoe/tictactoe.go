@@ -10,13 +10,24 @@ import (
 )
 
 var (
-	defaultSize = 3
+	DefaultSize = 3
+	PlayerOne   = player{
+		id:     1,
+		name:   "Player 1",
+		symbol: "O",
+	}
+	PlayerTwo = player{
+		id:     2,
+		name:   "Player 2",
+		symbol: "X",
+	}
+	PlayerNone = player{}
 )
 
 type TicTacToe struct {
 	grid       map[[2]int]int
 	oneDimSize int
-	curTurn    int // 0 (none) / 1 (user 1) / 2 (user 2)
+	curTurn    player
 	curRecord  currentRecord
 }
 
@@ -30,11 +41,25 @@ type option struct {
 	oneDimSize int
 }
 
-func NewTicTacToe() TicTacToe {
-	return TicTacToe{}
+type player struct {
+	id     int
+	name   string
+	symbol string
 }
 
-func (t TicTacToe) Start() error {
+func NewTicTacToe() TicTacToe {
+	return TicTacToe{
+		grid:       make(map[[2]int]int),
+		oneDimSize: DefaultSize,
+		curTurn:    PlayerOne,
+		curRecord: currentRecord{
+			rowCounts: make([]int, DefaultSize),
+			colCounts: make([]int, DefaultSize),
+		},
+	}
+}
+
+func (t *TicTacToe) Start() error {
 	opt, err := t.readOptions()
 	if err != nil {
 		return errors.New("[readOptions] error: " + err.Error())
@@ -48,10 +73,10 @@ func (t TicTacToe) Start() error {
 		}
 		if winner, isEnd := t.setUserMove(pos[0], pos[1]); isEnd {
 			t.printGrid()
-			if winner == 0 {
+			if winner == PlayerNone {
 				fmt.Println("Draw!")
 			} else {
-				fmt.Printf("The winner is User %d!\n", winner)
+				fmt.Printf("The winner is %s!\n", winner.name)
 			}
 			break
 		}
@@ -87,12 +112,10 @@ func (t *TicTacToe) setOptions(opt option) {
 		rowCounts: make([]int, t.oneDimSize),
 		colCounts: make([]int, t.oneDimSize),
 	}
-	t.grid = make(map[[2]int]int)
-	t.curTurn = 1
 }
 
 func (t TicTacToe) readUserMove() ([2]int, error) {
-	fmt.Printf("Enter the User %d position (0-index) in the format 'row,column': ", t.curTurn)
+	fmt.Printf("Enter the %s position (0-index) in the format 'row,column': ", t.curTurn.name)
 
 	var pos [2]int
 	for {
@@ -112,10 +135,10 @@ func (t TicTacToe) readUserMove() ([2]int, error) {
 	return pos, nil
 }
 
-func (t *TicTacToe) setUserMove(r, c int) (int, bool) {
+func (t *TicTacToe) setUserMove(r, c int) (player, bool) {
 
-	if t.curTurn == 1 {
-		t.grid[[2]int{r, c}] = 1
+	if t.curTurn == PlayerOne {
+		t.grid[[2]int{r, c}] = PlayerOne.id
 
 		t.curRecord.rowCounts[r]++
 		t.curRecord.colCounts[c]++
@@ -134,7 +157,7 @@ func (t *TicTacToe) setUserMove(r, c int) (int, bool) {
 			return t.curTurn, true
 		}
 	} else {
-		t.grid[[2]int{r, c}] = 2
+		t.grid[[2]int{r, c}] = PlayerTwo.id
 
 		t.curRecord.rowCounts[r]--
 		t.curRecord.colCounts[c]--
@@ -156,28 +179,32 @@ func (t *TicTacToe) setUserMove(r, c int) (int, bool) {
 
 	// tie
 	if len(t.grid) == t.oneDimSize*t.oneDimSize {
-		return 0, true
+		return PlayerNone, true
 	}
 
-	return 0, false
+	return PlayerNone, false
 }
 
 func (t *TicTacToe) takeTurn() {
-	t.curTurn = t.curTurn%2 + 1
+	if t.curTurn == PlayerOne {
+		t.curTurn = PlayerTwo
+	} else {
+		t.curTurn = PlayerOne
+	}
 }
 
 func (t TicTacToe) printGrid() {
 	for r := 0; r < t.oneDimSize; r++ {
 		var colStr string
 		for c := 0; c < t.oneDimSize; c++ {
-			if val, ok := t.grid[[2]int{r, c}]; ok {
-				if val == 1 {
-					colStr += "O "
+			if playerID, ok := t.grid[[2]int{r, c}]; ok {
+				if playerID == PlayerOne.id {
+					colStr += PlayerOne.symbol + " "
 				} else {
-					colStr += "X "
+					colStr += PlayerTwo.symbol + " "
 				}
 			} else {
-				colStr += "  "
+				colStr += "- "
 			}
 		}
 		fmt.Printf("%s\n", colStr)
@@ -187,7 +214,7 @@ func (t TicTacToe) printGrid() {
 func (t TicTacToe) validateSize(input string) (int, error) {
 	input = strings.TrimSpace(input)
 	if len(input) == 0 {
-		return defaultSize, nil
+		return DefaultSize, nil
 	}
 	size, err := strconv.Atoi(input)
 	if err != nil {

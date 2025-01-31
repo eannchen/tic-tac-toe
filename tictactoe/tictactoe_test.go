@@ -10,31 +10,184 @@ func TestSetUserMove(t *testing.T) {
 		name      string
 		condition condition
 		steps     [][2]int
-		winner    int
+		winner    player
 		isEnd     bool
 	}
 	tests := []useCase{
 		useCase{
-			name: "User 2 Win diagonally (from top right)",
+			name: "Unfinished game",
 			condition: condition{
 				oneDimSize: 3,
 			},
-			// O O X
-			// O X
-			// X
+			// X O
+			//   X
+			//   O
+			steps: [][2]int{
+				[2]int{0, 1},
+				[2]int{0, 0},
+				[2]int{2, 1},
+				[2]int{1, 1},
+			},
+			winner: PlayerNone,
+			isEnd:  false,
+		},
+		useCase{
+			name: "Draw",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			// X O X
+			// O X O
+			// O X O
 			steps: [][2]int{
 				[2]int{0, 0},
-				[2]int{0, 2},
 				[2]int{0, 1},
+				[2]int{0, 2},
 				[2]int{1, 1},
 				[2]int{1, 0},
+				[2]int{1, 2},
+				[2]int{2, 1},
 				[2]int{2, 0},
+				[2]int{2, 2},
 			},
-			winner: 2,
+			winner: PlayerNone,
 			isEnd:  true,
 		},
 		useCase{
-			name: "User 2 Win diagonally (from top left)",
+			name: "User 1 wins horizontally (row 0)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			// O O O
+			// X X
+			//
+			steps: [][2]int{
+				[2]int{0, 0},
+				[2]int{1, 0},
+				[2]int{0, 1},
+				[2]int{1, 1},
+				[2]int{0, 2},
+			},
+			winner: PlayerOne,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 1 wins vertically (column 1)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			// X O
+			// X O
+			//   O
+			steps: [][2]int{
+				[2]int{0, 1},
+				[2]int{0, 0},
+				[2]int{1, 1},
+				[2]int{1, 0},
+				[2]int{2, 1},
+			},
+			winner: PlayerOne,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 1 Wins diagonally (from top left)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			// O   X
+			// X O
+			// O X O
+			steps: [][2]int{
+				[2]int{0, 0},
+				[2]int{0, 2},
+				[2]int{1, 1},
+				[2]int{1, 0},
+				[2]int{2, 0},
+				[2]int{2, 1},
+				[2]int{2, 2},
+			},
+			winner: PlayerOne,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 1 wins diagonally (from top right)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			//   X O
+			//   O X
+			// O X O
+			steps: [][2]int{
+				[2]int{0, 2},
+				[2]int{0, 1},
+				[2]int{1, 1},
+				[2]int{1, 2},
+				[2]int{2, 2},
+				[2]int{2, 1},
+				[2]int{2, 0},
+			},
+			winner: PlayerOne,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 2 wins horizontally (row 0)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			// X X X
+			// O O
+			//   O
+			steps: [][2]int{
+				[2]int{1, 0},
+				[2]int{0, 0},
+				[2]int{1, 1},
+				[2]int{0, 1},
+				[2]int{2, 1},
+				[2]int{0, 2},
+			},
+			winner: PlayerTwo,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 2 wins horizontally (row 1)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			//   O O
+			// X X X
+			//   O
+			steps: [][2]int{
+				[2]int{0, 1},
+				[2]int{1, 0},
+				[2]int{0, 2},
+				[2]int{1, 1},
+				[2]int{2, 1},
+				[2]int{1, 2},
+			},
+			winner: PlayerTwo,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 2 wins horizontally (row 2)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			// O O
+			//   O
+			// X X X
+			steps: [][2]int{
+				[2]int{0, 0},
+				[2]int{2, 0},
+				[2]int{0, 1},
+				[2]int{2, 1},
+				[2]int{1, 1},
+				[2]int{2, 2},
+			},
+			winner: PlayerTwo,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 2 wins diagonally (from top left)",
 			condition: condition{
 				oneDimSize: 3,
 			},
@@ -49,7 +202,26 @@ func TestSetUserMove(t *testing.T) {
 				[2]int{1, 0},
 				[2]int{2, 0},
 			},
-			winner: 2,
+			winner: PlayerTwo,
+			isEnd:  true,
+		},
+		useCase{
+			name: "User 2 wins diagonally (from top right)",
+			condition: condition{
+				oneDimSize: 3,
+			},
+			// O O X
+			// O X
+			// X
+			steps: [][2]int{
+				[2]int{0, 0},
+				[2]int{0, 2},
+				[2]int{0, 1},
+				[2]int{1, 1},
+				[2]int{1, 0},
+				[2]int{2, 0},
+			},
+			winner: PlayerTwo,
 			isEnd:  true,
 		},
 	}
@@ -57,7 +229,7 @@ func TestSetUserMove(t *testing.T) {
 		game := NewTicTacToe()
 		game.setOptions(option{oneDimSize: tt.condition.oneDimSize})
 		t.Run(tt.name, func(t *testing.T) {
-			var winner int
+			var winner player
 			var isEnd bool
 			for _, pos := range tt.steps {
 				winner, isEnd = game.setUserMove(pos[0], pos[1])
@@ -68,7 +240,7 @@ func TestSetUserMove(t *testing.T) {
 				t.Errorf("setUserMove() returned %t, expected %t", isEnd, tt.isEnd)
 			}
 			if winner != tt.winner {
-				t.Errorf("setUserMove() returned %d, expected %d", winner, tt.winner)
+				t.Errorf("setUserMove() returned %v, expected %v", winner, tt.winner)
 			}
 		})
 	}
@@ -97,7 +269,7 @@ func TestValidateSize(t *testing.T) {
 		useCase{
 			name:   "Ok, use default size",
 			input:  "   ",
-			size:   defaultSize,
+			size:   DefaultSize,
 			hasErr: false,
 		},
 		useCase{
