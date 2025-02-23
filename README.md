@@ -1,4 +1,5 @@
 # Tic Tac Toe
+A simple project for training complexity handling through the implementation of a Tic Tac Toe game.
 
 ## Core Features
 
@@ -9,7 +10,6 @@
 
 2. Basic UI and Input Handling:
    - A simple terminal interface for the game.
-
 
 ## How to Run
 1. Have Go installed (https://go.dev/dl/)
@@ -24,4 +24,3 @@
 
 ## Todo
 1. A Computer Player
-2. Implement and note my first thought of implementing this game.
